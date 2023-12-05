@@ -1,0 +1,14 @@
+version: "3.0"
+services:
+  client:
+    image: iplay
+    entrypoint: ["tail", "-f", "/dev/null"]
+    container_name: client
+    volumes:
+      - ./Results:/Results
+  server:
+    build: ./server
+    container_name: server
+    cap_add:
+    - NET_ADMIN
+
