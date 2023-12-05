@@ -1,9 +1,9 @@
 import subprocess
 
 scenarios = ["bw", "delay", "loss"]
-values = {"bw": [100, 200, 500],
-          "delay": [50, 100, 300],
-          "loss": [5, 10, 20]}
+values = {"bw": [50, 100, 200, 1000],
+          "delay": [100, 250, 500],
+          "loss": [10, 15, 25]}
 
 baseClient = ["docker", "exec", "client", "scripts/dash-emulator.py", "--abr"]
 clients = [
