@@ -1,8 +1,7 @@
 import subprocess
 
-scenarios = ["bw", "delay", "loss"]
-values = {"bw": [50, 100, 200, 1000],
-          "delay": [100, 250, 500],
+scenarios = ["delay", "loss"]
+values = { "delay": [100, 250, 500],
           "loss": [10, 15, 25]}
 
 baseClient = ["docker", "exec", "client", "scripts/dash-emulator.py", "--abr"]
@@ -14,12 +13,9 @@ clients = [
 repCount = 3
 
 for scenario in scenarios:
-  callArray = ["docker", "exec", "server", "tc", "qdisc", "add", "dev", "eth0", "root", "netem"]
+  callArray = ["docker", "exec", "server", "tc", "qdisc", "add", "dev", "eth0", "root", "netem", "rate", "200Kbps"]
   suffix = ""
-  if scenario == "bw":
-    callArray.append("rate")
-    suffix = "Kbps"
-  elif scenario == "delay":
+  if scenario == "delay":
     callArray.append("delay")
     suffix = "ms"
   elif scenario == "loss":

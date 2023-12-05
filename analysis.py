@@ -5,11 +5,13 @@ def process_json_file(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)
         avg_br = data['avg_bitrate']
-        return avg_br
+        dur_stall = data['dur_stall']
+        return avg_br, dur_stall
 
 def process_results_directory(directory):
     results = []
     for root, dirs, files in os.walk(directory):
+        dirs.sort()  # Sort the directories
         for file in files:
             if file.endswith('.json'):
                 file_path = os.path.join(root, file)
