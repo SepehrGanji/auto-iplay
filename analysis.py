@@ -4,10 +4,8 @@ import json
 def process_json_file(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)
-        stop_time = data['segments'][0]['stop_time']
-        startup_delay = data['startup_delay']
-
-        return stop_time, startup_delay
+        avg_br = data['avg_bitrate']
+        return avg_br
 
 def process_results_directory(directory):
     results = []

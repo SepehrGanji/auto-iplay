@@ -1,7 +1,7 @@
 version: "3.0"
 services:
   client:
-    image: iplay
+    image: headless_player_component
     entrypoint: ["tail", "-f", "/dev/null"]
     container_name: client
     volumes:
