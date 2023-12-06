@@ -5,11 +5,10 @@ values = {"bw": [10, 20, 100],
           "delay": [100, 200, 500],
           "loss": [10, 20, 30]}
 
-baseClient = ["docker", "exec", "client", "iplay", "-i", "http://server/output.mpd", "--mod_analyzer", "data_collector", "--mod_abr"]
+baseClient = ["docker", "exec", "client", "iplay", "-i", "http://server/output.mpd", "--mod_analyzer", "data_collector", "--mod_bw"]
 clients = [
-  baseClient + ["bandwidth", "--run_dir"],
-  baseClient + ["buffer", "--run_dir"],
-  baseClient + ["hybrid", "--run_dir"],
+  baseClient + ["bw_meter2", "--run_dir"],
+  baseClient + ["bw_meter3", "--run_dir"]
 ]
 repCount = 1
 
@@ -40,7 +39,6 @@ for scenario in scenarios:
         subprocess.call(["docker", "exec", "client", "mkdir", "-p", "/Results/" + scenario + str(value) + "-C" + str(clientCounter)])
         print(final)
         subprocess.call(final)
-    subprocess.call(["docker", "exec", "server", "ping", "-c" , "1", "client"])
     subprocess.call(["docker", "compose" ,"stop", "server"])
     subprocess.call(["docker", "compose", "rm", "-f"])
     

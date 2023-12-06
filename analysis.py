@@ -1,27 +1,31 @@
-import os
 import json
+import matplotlib.pyplot as plt
 
-def process_json_file(file_path):
+def read_bandwidth_data(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)
-        stop_time = data['segments'][0]['stop_time']
-        startup_delay = data['startup_delay']
+        time = []
+        bandwidth = []
+        for item in data['bandwidth_estimate']:
+            if item['bandwidth'] <= 10000:
+                time.append(item['time'])
+                bandwidth.append(item['bandwidth']/8/1000)
+        return time, bandwidth
 
-        return stop_time, startup_delay
+def plot_data(time1, bandwidth1, time2, bandwidth2):
+    plt.figure(figsize=(10, 6))
+    plt.plot(time1, bandwidth1, label='Segment-based')
+    plt.plot(time2, bandwidth2, label='Instantaneous')
+    plt.xlabel('Time (seconds)')
+    plt.ylabel('Bandwidth (Kbps)')
+    plt.title('Delay Network')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
-def process_results_directory(directory):
-    results = []
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file.endswith('.json'):
-                file_path = os.path.join(root, file)
-                result = process_json_file(file_path)
-                results.append((file_path, result))
+# Read data from JSON files
+time1, bandwidth1 = read_bandwidth_data('Results/delay200-C1/data-1.json')
+time2, bandwidth2 = read_bandwidth_data('Results/delay200-C2/data-1.json')
 
-    return results
-
-results_directory = 'Results'
-processed_results = process_results_directory(results_directory)
-
-for file_path, result in processed_results:
-    print(f"File: {file_path}, Data: {result}")
+# Plot the data
+plot_data(time1, bandwidth1, time2, bandwidth2)
