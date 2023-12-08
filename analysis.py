@@ -1,27 +1,33 @@
-import os
 import json
+import matplotlib.pyplot as plt
 
-def process_json_file(file_path):
+def read_bandwidth_data(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)
-        stop_time = data['segments'][0]['stop_time']
-        startup_delay = data['startup_delay']
+        time = []
+        buff = []
+        for item in data['buffer_level']:
+            if item['level'] > 0:
+                time.append(item['time'])
+                buff.append(item['level'])
+        return time, buff
 
-        return stop_time, startup_delay
+def plot_data(time1, buff1, time2, buff2, time3, buff3):
+    plt.figure(figsize=(10, 6))
+    plt.plot(time1, buff1, label='2')
+    plt.plot(time2, buff2, label='4')
+    plt.plot(time3, buff3, label='6')
+    plt.xlabel('Time (seconds)')
+    plt.ylabel('Buffer Level')
+    plt.title('Panic Level')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
-def process_results_directory(directory):
-    results = []
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file.endswith('.json'):
-                file_path = os.path.join(root, file)
-                result = process_json_file(file_path)
-                results.append((file_path, result))
+# Read data from JSON files
+time1, buff1 = read_bandwidth_data('Results/panic2.json/data-1.json')
+time2, buff2 = read_bandwidth_data('Results/panic4.json/data-1.json')
+time3, buff3 = read_bandwidth_data('Results/panic6.json/data-1.json')
 
-    return results
-
-results_directory = 'Results'
-processed_results = process_results_directory(results_directory)
-
-for file_path, result in processed_results:
-    print(f"File: {file_path}, Data: {result}")
+# Plot the data
+plot_data(time1, buff1, time2, buff2, time3, buff3)

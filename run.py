@@ -1,46 +1,27 @@
 import subprocess
+import os
 
-scenarios = ["bw", "delay", "loss"]
-values = {"bw": [10, 20, 100],
-          "delay": [100, 200, 500],
-          "loss": [10, 20, 30]}
+client = ["docker", "exec", "client", "iplay", "-i", "http://server/output.mpd", 
+              "--mod_analyzer", "data_collector", "--config", "/config.json",
+              "--run_dir"]
 
-baseClient = ["docker", "exec", "client", "iplay", "-i", "http://server/output.mpd", "--mod_analyzer", "data_collector", "--mod_abr"]
-clients = [
-  baseClient + ["bandwidth", "--run_dir"],
-  baseClient + ["buffer", "--run_dir"],
-  baseClient + ["hybrid", "--run_dir"],
-]
-repCount = 1
+subprocess.call(["docker", "compose", "up", "-d"])
+limit = ["docker", "exec", "server", "tc", "qdisc", 
+         "add", "dev", "eth0", "root", "netem",
+         "rate", "10Kbps",
+         "delay", "200ms",
+         "loss", "10%"]
+subprocess.call(limit)
 
-for scenario in scenarios:
-  callArray = ["docker", "exec", "server", "tc", "qdisc", "add", "dev", "eth0", "root", "netem"]
-  suffix = ""
-  if scenario == "bw":
-    callArray.append("rate")
-    suffix = "kbit"
-  elif scenario == "delay":
-    callArray.append("delay")
-    suffix = "ms"
-  elif scenario == "loss":
-    callArray.append("loss")
-    suffix = "%"
-  
-  for value in values[scenario]:
-    subprocess.call(["docker", "compose", "up", "-d"])
-    callArray.append(str(value) + suffix)
-    print(callArray)
-    subprocess.call(callArray)
-    callArray.pop()
-    clientCounter = 0;
-    for client in clients:
-      clientCounter += 1
-      for i in range(repCount):
-        final = client + ["/Results/" + scenario + str(value) + "-C" + str(clientCounter)]
-        subprocess.call(["docker", "exec", "client", "mkdir", "-p", "/Results/" + scenario + str(value) + "-C" + str(clientCounter)])
-        print(final)
+current_directory = os.path.dirname(os.path.realpath(__file__))
+config_directory = os.path.join(current_directory, 'Config')
+for config in os.listdir(config_directory):
+    if os.path.isfile(os.path.join(config_directory, config)):
+        print(f"Running {config}")
+        subprocess.call(["docker", "cp", f"./Config/{config}", "client:/config.json"])
+        final = client + ["/Results/" + config]
+        subprocess.call(["docker", "exec", "client", "mkdir", "-p", "/Results/" + config])
         subprocess.call(final)
-    subprocess.call(["docker", "exec", "server", "ping", "-c" , "1", "client"])
-    subprocess.call(["docker", "compose" ,"stop", "server"])
-    subprocess.call(["docker", "compose", "rm", "-f"])
-    
+        
+subprocess.call(["docker", "compose", "down"])
+
