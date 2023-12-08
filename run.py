@@ -1,16 +1,19 @@
 import subprocess
 import os
 
-client = ["docker", "exec", "client", "iplay", "-i", "http://server/output.mpd", 
+# iplay -i http://server/final.mpd --mod_analyzer data_collector --mod_abr 360_hm:data=./hm_data.json
+gethm = ["docker", "exec", "client", "wget", "-P", "/hmdata", "http://server/hm_data.json"]
+client = ["docker", "exec", "client", "iplay", "-i", "http://server/final.mpd", 
               "--mod_analyzer", "data_collector", "--config", "/config.json",
-              "--run_dir"]
+              "--mod_abr", "360_hm:data=/hmdata/hm_data.json", "--run_dir"]
 
 subprocess.call(["docker", "compose", "up", "-d"])
+subprocess.call(gethm)
 limit = ["docker", "exec", "server", "tc", "qdisc", 
          "add", "dev", "eth0", "root", "netem",
-         "rate", "10Kbps",
-         "delay", "200ms",
-         "loss", "10%"]
+         "rate", "100Kbps",
+         "delay", "100ms",
+         "loss", "5%"]
 subprocess.call(limit)
 
 current_directory = os.path.dirname(os.path.realpath(__file__))
